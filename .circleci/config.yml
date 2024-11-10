@@ -1,0 +1,39 @@
+version: 2.1
+
+executors:
+  python-executor:
+    docker:
+      - image: circleci/python:3.9  # Wybieramy obraz Dockera z Pythonem
+    working_directory: ~/repo         # Ścieżka robocza w kontenerze
+
+jobs:
+  install-dependencies:
+    executor: python-executor
+    steps:
+      - checkout                      # Sprawdzenie kodu z repozytorium
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv        # Tworzymy środowisko wirtualne
+            . venv/bin/activate        # Aktywujemy środowisko
+            pip install --upgrade pip  # Uaktualniamy pip
+            pip install -r requirements.txt  # Instalujemy zależności z requirements.txt
+
+  run-tests:
+    executor: python-executor
+    steps:
+      - checkout                      # Sprawdzenie kodu z repozytorium
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate        # Aktywujemy środowisko wirtualne
+            python -m unittest discover  # Uruchamiamy testy jednostkowe
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - install-dependencies          # Najpierw instalujemy zależności
+      - run-tests:
+          requires:
+            - install-dependencies    # Uruchamiamy testy po zainstalowaniu zależności
